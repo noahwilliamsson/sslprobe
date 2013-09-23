@@ -39,7 +39,7 @@ static struct addrinfo *addr_aisort(struct addrinfo *ai0) {
 }
 
 struct addrinfo *addr_resolve(char *hostname, char *port) {
-	struct addrinfo hints = {}, *list;
+	struct addrinfo hints = { 0 }, *list;
 	int ret;
 
 	hints.ai_family = PF_UNSPEC;
@@ -59,22 +59,21 @@ struct addrinfo *addr_resolve(char *hostname, char *port) {
 }
 
 int addr_ai2port(struct addrinfo *ai) {
-	static char serv[6] = {};
+	static char serv[NI_MAXSERV];
 
 	if(getnameinfo(ai->ai_addr, ai->ai_addrlen, NULL, 0,
 		serv, 6, NI_NUMERICSERV) < 0)
 			return -1;
 
-	serv[6 - 1] = 0;
 	return atoi(serv);
 }
 
 char *addr_ai2ip(struct addrinfo *ai) {
-	static char ip[INET6_ADDRSTRLEN];
+	static char ip[NI_MAXHOST];
 
 	if(getnameinfo(ai->ai_addr, ai->ai_addrlen, ip, sizeof(ip),
 		NULL, 0, NI_NUMERICHOST) < 0)
 			return NULL;
-	ip[INET6_ADDRSTRLEN - 1] = 0;
+
 	return ip;
 }
