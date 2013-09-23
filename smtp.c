@@ -19,7 +19,7 @@ typedef enum {
 	SMTP_MULTI,
 	SMTP_TEXT,
 	SMTP_CRLF,
-	SMTP_DONE,
+	SMTP_DONE
 } smtp_state_t;
 
 

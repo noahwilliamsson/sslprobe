@@ -25,7 +25,7 @@ typedef enum {
 	SSLv3 = 0x0300,
 	TLSv10 = 0x301,
 	TLSv11 = 0x302,
-	TLSv12 = 0x303,
+	TLSv12 = 0x303
 } ssl_version_t;
 
 #define TEST_MAX_CIPHERS 512
