@@ -257,8 +257,8 @@ int tls_handle_record(connection_t *c) {
 		default:
 			fprintf(stderr, "%s Handshake: Ignoring packet of type 0x%02x\n",
 				proto_ver(c), p[0]);
-			p = buf_read_next(c->buf, 4, NULL);
-			p = buf_read_next(c->buf, test->hs_len, NULL);
+			buf_read_next(c->buf, 4, NULL);
+			buf_read_next(c->buf, test->hs_len, NULL);
 			buf_read_done(c->buf);
 			break;
 		}
@@ -488,7 +488,7 @@ static int tls_handle_hs_servercert(connection_t *c) {
 	if((p = buf_read_next(c->buf, 3, &msg_len)) == NULL) return -1;
 	cert_list_size = p[0] << 16 | p[1] << 8 | p[2];
 	test->num_certs = 0;
-	while(msg_len > 0) {
+	while(cert_list_size > 0) {
 		if((p = buf_read_next(c->buf, 3, &msg_len)) == NULL) return -1;
 		cert_size = p[0] << 16 | p[1] << 8 | p[2];
 
