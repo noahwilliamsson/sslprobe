@@ -438,7 +438,7 @@ static int tls_handle_hs_serverhello(connection_t *c) {
 				fprintf(stderr, " [%s]", npn);
 
 				if(test->num_npn < TEST_MAX_NPN) {
-					test->npn[test->num_npn] = realloc(test->npn[test->num_npn], j);
+					test->npn[test->num_npn] = realloc(test->npn[test->num_npn], j + 1);
 					if(test->npn[test->num_npn]) {
 						strcpy(test->npn[test->num_npn], npn);
 						test->num_npn++;
