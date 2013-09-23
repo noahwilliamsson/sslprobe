@@ -28,9 +28,13 @@ static struct addrinfo *addr_aisort(struct addrinfo *ai0) {
 	struct addrinfo **arr, *ai;
 	int i, n;
 
+	if(ai0 == NULL) return NULL;
+
 	for(n = 0, ai = ai0; ai; n++, ai = ai->ai_next);
+
 	arr = (struct addrinfo **)malloc(n * sizeof(struct addrinfo *));
 	for(i = 0, ai = ai0; ai; i++, ai = ai->ai_next) arr[i] = ai;
+
 	qsort(arr, n, sizeof(struct addrinfo *), addr_aicmp);
 	for(i = 0; i < n - 1; i++) arr[i]->ai_next = arr[i + 1];
 	arr[i]->ai_next = NULL;
