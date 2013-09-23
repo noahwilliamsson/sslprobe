@@ -122,12 +122,13 @@ void connection_finish(connection_t *c) {
 }
 
 int connection_write(connection_t *c, void *data, size_t len) {
+	unsigned char *ptr = (unsigned char *)data;
 	ssize_t n;
 
 	while(len > 0) {
-		n = send(c->fd, data, len, 0);
+		n = send(c->fd, ptr, len, 0);
 		if(n > 0) {
-			data += n;
+			ptr += n;
 			len -= n;
 			continue;
 		}
