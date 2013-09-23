@@ -76,12 +76,12 @@
 #include "proto.h"
 
 
+static void probe_server(struct addrinfo *, char *);
 static void protocol_report(test_t *, int *);
 
 int main(int argc, char **argv) {
 	char *port = "443";
 	char *hostname;
-	int i;
 	struct addrinfo *ai0, *ai;
 
 	if(argc < 2) {
@@ -106,8 +106,8 @@ int main(int argc, char **argv) {
 	#endif
 
 	openlog(APPNAME, LOG_PERROR, LOG_USER);
-
 	signal(SIGPIPE, SIG_IGN);
+
 	if((ai0 = addr_resolve(hostname, port)) == NULL)
 		return 0;
 
@@ -115,46 +115,47 @@ int main(int argc, char **argv) {
 		hostname = NULL;
 
 	printf("[\n");
-	for(ai = ai0; ai; ai = ai->ai_next) {
-		int once = 0;
-		test_t tests[5] = {
-			{ .version = 0x0002 },
-			{ .version = 0x0300 },
-			{ .version = 0x0301 },
-			{ .version = 0x0302 },
-			{ .version = 0x0303 }
-		};
-
-		printf("  {\n");
-		printf("    \"ip\":\"%s\",\n", addr_ai2ip(ai));
-		printf("    \"port\":%d,\n", addr_ai2port(ai));
-		if(hostname != NULL)
-			printf("    \"host\":\"%s\",\n", hostname);
-		else
-			printf("    \"host\":null,\n");
-
-
-		/* Fire up new connections to test each protocol */
-		fprintf(stderr, "[%s] Starting SSL/TLS tests\n",
-			addr_ai2ip(ai));
-		for(i = 0; i < 5; i++)
-			proto_connect(ai, hostname, &tests[i]);
-
-		/* Do protocol negotation and test ciphers */
-		proto_process();
-
-
-		printf("    \"protocols\":[\n");
-		for(i = 0; i < 5; i++)
-			protocol_report(&tests[i], &once);
-		printf("\n    ]\n");
-
-		printf("  }%s\n", ai->ai_next? ",": "");
-	}
-
+	for(ai = ai0; ai; ai = ai->ai_next) probe_server(ai, hostname);
 	printf("]\n");
 
 	return 0;
+}
+
+static void probe_server(struct addrinfo *ai, char *hostname) {
+	int i, once = 0;
+	test_t tests[5] = {
+		{ .version = 0x0002 },
+		{ .version = 0x0300 },
+		{ .version = 0x0301 },
+		{ .version = 0x0302 },
+		{ .version = 0x0303 }
+	};
+
+	printf("  {\n");
+	printf("    \"ip\":\"%s\",\n", addr_ai2ip(ai));
+	printf("    \"port\":%d,\n", addr_ai2port(ai));
+	if(hostname != NULL)
+		printf("    \"host\":\"%s\",\n", hostname);
+	else
+		printf("    \"host\":null,\n");
+
+
+	/* Fire up new connections to test each protocol */
+	fprintf(stderr, "[%s] Starting SSL/TLS tests\n",
+		addr_ai2ip(ai));
+	for(i = 0; i < 5; i++)
+		proto_connect(ai, hostname, &tests[i]);
+
+	/* Do protocol negotation and test ciphers */
+	proto_process();
+
+
+	printf("    \"protocols\":[\n");
+	for(i = 0; i < 5; i++)
+		protocol_report(&tests[i], &once);
+	printf("\n    ]\n");
+
+	printf("  }%s\n", ai->ai_next? ",": "");
 }
 
 static void protocol_report(test_t *test, int *once) {
