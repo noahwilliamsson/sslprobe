@@ -8,7 +8,7 @@ typedef struct {
         size_t size;
         size_t len;
         size_t read_offset;
-        unsigned char data[0];
+        unsigned char data[1];
 } buf_t;
 
 
