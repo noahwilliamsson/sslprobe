@@ -491,6 +491,7 @@ static int tls_handle_hs_servercert(connection_t *c) {
 	while(cert_list_size > 0) {
 		if((p = buf_read_next(c->buf, 3, &msg_len)) == NULL) return -1;
 		cert_size = p[0] << 16 | p[1] << 8 | p[2];
+		cert_list_size -= 3 + cert_size;
 
 		if((p = buf_read_next(c->buf, cert_size, &msg_len)) == NULL) return -1;
 
