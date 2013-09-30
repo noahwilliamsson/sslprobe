@@ -228,7 +228,7 @@ int connection_do_io(void) {
 				continue;
 			}
 
-			if(elapsed_ms > 5000)
+			if(elapsed_ms > 10000)
 				syslog(LOG_INFO, "%s Connection to %s succeed after %dms",
 					proto_ver(c), c->hostname, elapsed_ms);
 
@@ -237,14 +237,14 @@ int connection_do_io(void) {
 
 			continue;
 		}
-		else if(c->is_connecting && elapsed_ms >= 10000) {
+		else if(c->is_connecting && elapsed_ms >= 35000) {
 			c->error = ETIMEDOUT;
 			connection_finish(c);
 			continue;
 		}
 
 		if(!FD_ISSET(c->fd, &rfds)) {
-			if(elapsed_ms >= 15000) {
+			if(elapsed_ms > 35000) {
 				syslog(LOG_INFO, "%s Timeout waiting for data from %s, %dms elapsed",
 					proto_ver(c), c->hostname, elapsed_ms);
 				c->error = ETIMEDOUT;
