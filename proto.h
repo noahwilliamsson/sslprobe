@@ -75,6 +75,8 @@ typedef struct {
 
 	/* Set if server restricts cipher count to 128 */
 	int bugfix_limit_cs;
+	/* Set if server breaks on TLS extensions (Oracle HTTP Server 10g) */
+	int bugfix_broken_tlsext;
 	/* Set if server selects cipher not in ClientHello */
 	int bugfix_forced_cs;
 

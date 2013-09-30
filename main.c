@@ -205,6 +205,7 @@ static void protocol_report(test_t *test, int *once) {
 		printf("          \"description\":%d\n", test->alert_desc);
 		printf("        },\n");
 		printf("        \"bugs\":{\n");
+		printf("          \"brokenTlsExt\":%d,\n", test->bugfix_broken_tlsext);
 		printf("          \"csLimit\":%d,\n", test->bugfix_limit_cs);
 		printf("          \"forcedCs\":%d\n", test->bugfix_forced_cs);
 		printf("        },\n");

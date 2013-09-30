@@ -108,33 +108,36 @@ int tls_do_clienthello(connection_t *c) {
 	ext_len_offset = buf_len(b);
 	buf_append_u16(b, 0 /* updating length later */);
 
-	/* Session tickets: http://tools.ietf.org/html/rfc5077 */
-	buf_append_u16(b, 0x0023 /* type */);
-	buf_append_u16(b, 0x0000 /* length */);
+	if(!test->bugfix_broken_tlsext) {
 
-	/* Secure reneg: http://tools.ietf.org/html/rfc5746 */
-	buf_append_u16(b, 0xff01 /* type */);
-	buf_append_u16(b, 0x0001 /* length */);
-	buf_append_u8(b, 0x00 /* empty renegotiated_connection[] */);
-
-	if(c->hostname != NULL) {
-		/* SNI */
-		buf_append_u16(b, 0x0000 /* type */);
-		buf_append_u16(b, 5 + strlen(c->hostname) /* length */);
-		buf_append_u16(b, 3 + strlen(c->hostname) /* SNI list length */);
-		buf_append_u8(b, 0x00 /* Server Name Type */);
-		buf_append_u16(b, strlen(c->hostname) /* Server Name Length */);
-		buf_append(b, (unsigned char *)c->hostname, strlen(c->hostname));
-
-		/* NPN (only allowed if also doing SNI) */
-		buf_append_u16(b, 0x3374 /* type */);
+		/* Session tickets: http://tools.ietf.org/html/rfc5077 */
+		buf_append_u16(b, 0x0023 /* type */);
 		buf_append_u16(b, 0x0000 /* length */);
-	}
 
-	/* Unregistered 1337 extension just to fuck with NIDS */
-	buf_append_u16(b, 0x0539 /* type */);
-	buf_append_u16(b, 42 /* length */);
-	buf_append(b, (unsigned char *)"id\nuid=0(root) gid=0(root) groups=0(root)\n", 42);
+		/* Secure reneg: http://tools.ietf.org/html/rfc5746 */
+		buf_append_u16(b, 0xff01 /* type */);
+		buf_append_u16(b, 0x0001 /* length */);
+		buf_append_u8(b, 0x00 /* empty renegotiated_connection[] */);
+
+		if(c->hostname != NULL) {
+			/* SNI */
+			buf_append_u16(b, 0x0000 /* type */);
+			buf_append_u16(b, 5 + strlen(c->hostname) /* length */);
+			buf_append_u16(b, 3 + strlen(c->hostname) /* SNI list length */);
+			buf_append_u8(b, 0x00 /* Server Name Type */);
+			buf_append_u16(b, strlen(c->hostname) /* Server Name Length */);
+			buf_append(b, (unsigned char *)c->hostname, strlen(c->hostname));
+
+			/* NPN (only allowed if also doing SNI) */
+			buf_append_u16(b, 0x3374 /* type */);
+			buf_append_u16(b, 0x0000 /* length */);
+		}
+
+		/* Unregistered 1337 extension just to fuck with NIDS */
+		buf_append_u16(b, 0x0539 /* type */);
+		buf_append_u16(b, 42 /* length */);
+		buf_append(b, (unsigned char *)"id\nuid=0(root) gid=0(root) groups=0(root)\n", 42);
+	}
 
 
 	p = buf_peek(b, rec_len_offset, 2);

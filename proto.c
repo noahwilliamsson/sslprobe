@@ -202,9 +202,17 @@ static int proto_finish(connection_t *c) {
 	if(test->version == 2)
 		return 0;
 
-	if(test->alert_level == 2 && test->alert_desc == 47 && !test->bugfix_limit_cs) {
-		fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with limited ciphersuite\n", proto_ver(c));
-		test->bugfix_limit_cs = 128;
+	if(test->alert_level == 2 && test->alert_desc == 47) do {
+		if(!test->bugfix_limit_cs) {
+			test->bugfix_limit_cs = 128;
+			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with limited ciphersuite\n", proto_ver(c));
+		}
+		else if(!test->bugfix_broken_tlsext) {
+			test->bugfix_broken_tlsext = 1;
+			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with no TLS extensions\n", proto_ver(c));
+		}
+		else
+			break;
 
 		/* Retry with more limited cipher suite list */
 		test->state = X_ACCEPTED;
@@ -219,7 +227,7 @@ static int proto_finish(connection_t *c) {
 		}
 
 		return 0;
-	}
+	} while(0);
 
 	/**
 	 * Stop testing ciphers on servers which forces ciphers
