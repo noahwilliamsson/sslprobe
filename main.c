@@ -191,6 +191,7 @@ static void protocol_report(test_t *test, int *once) {
 	if(test->version != 2) {
 		printf("        \"extensions\":{\n");
 		printf("          \"sni\":%d,\n", test->ext_sni);
+		printf("          \"sniNameUnknown\":%d,\n", test->ext_sni_unknown);
 		printf("          \"sessionTicket\":%d,\n", test->ext_tickets);
 		printf("          \"secureRenegotiation\":%d,\n", test->ext_reneg);
 		printf("          \"npn\":[\n");

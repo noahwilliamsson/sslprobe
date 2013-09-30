@@ -297,7 +297,7 @@ static int tls_handle_alert(connection_t *c) {
 	case 47: desc = "Illegal parameter"; break;
 	case 49: desc = "Access denied"; break;
 	case 110: desc = "Unsupported extension"; break;
-	case 112: desc = "Unrecognized name"; break;
+	case 112: desc = "Unrecognized name"; test->ext_sni_unknown = 1; break;
 	default: desc = "<description unavailable>"; break;
 	}
 

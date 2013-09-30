@@ -68,6 +68,8 @@ typedef struct {
 	char *npn[TEST_MAX_NPN];
 	/* If SNI was seen in ServerHello */
 	int ext_sni;
+	/* If we get "Unrecognized name" */
+	int ext_sni_unknown;
 	/* If SessionTicket was seen in ServerHello */
 	int ext_tickets;
 	/* If Re-Negotiation was seen in ServerHello */
