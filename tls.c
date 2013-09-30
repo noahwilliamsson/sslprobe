@@ -19,6 +19,7 @@
 static int tls_handle_alert(connection_t *);
 static int tls_handle_hs_serverhello(connection_t *);
 static int tls_handle_hs_servercert(connection_t *);
+static int tls_handle_hs_cert_req(connection_t *);
 static int tls_handle_hs_hellodone(connection_t *);
 static int tls_handle_hs_kex(connection_t *);
 
@@ -251,6 +252,10 @@ int tls_handle_record(connection_t *c) {
 			break;
 		case 12: /* Key exchange */
 			if(tls_handle_hs_kex(c) < 0)
+				return -1;
+			break;
+		case 13: /* Certificate request */
+			if(tls_handle_hs_cert_req(c) < 0)
 				return -1;
 			break;
 		case 14: /* ServerHello done */
@@ -539,6 +544,34 @@ static int tls_handle_hs_kex(connection_t *c) {
 		proto_ver(c), type, msg_len);
 
 	if((p = buf_read_next(c->buf, msg_len, &msg_len)) == NULL) return -1;
+
+	buf_read_done(c->buf);
+
+	return 0;
+}
+
+static int tls_handle_hs_cert_req(connection_t *c) {
+	int type;
+	size_t msg_len;
+	unsigned short dn_len;
+	unsigned char *p;
+
+	if((p = buf_read_next(c->buf, 4, NULL)) == NULL) return -1;
+	type = p[0];
+	msg_len = p[1] << 16 | p[2] << 8 | p[3];
+	fprintf(stderr, "%s Certificate request: [type 0x%02x, len 0x%06zx]\n",
+		proto_ver(c), type, msg_len);
+
+	if((p = buf_read_next(c->buf, 1, &msg_len)) == NULL) return -1;
+	fprintf(stderr, "%s Certificate request: ClientCertificateType count 0x%02x\n",
+		proto_ver(c), p[0]);
+	if((p = buf_read_next(c->buf, p[0], &msg_len)) == NULL) return -1;
+
+	if((p = buf_read_next(c->buf, 2, &msg_len)) == NULL) return -1;
+	dn_len = p[0] << 8 | p[0];
+	fprintf(stderr, "%s Certificate request: DN length 0x%04x\n",
+		proto_ver(c), dn_len);
+	if((p = buf_read_next(c->buf, dn_len, &msg_len)) == NULL) return -1;
 
 	buf_read_done(c->buf);
 
