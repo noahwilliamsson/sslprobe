@@ -60,9 +60,13 @@ typedef struct {
 	/* Certificate chain */
 	int num_certs;
 	char *certs[TEST_MAX_CERTS];
+
 	/* Ciphers supported by server */
 	int num_ciphers;
 	int ciphers[TEST_MAX_CIPHERS];
+	int has_cs_preference;
+	int test_cs_preference;
+
 	/* If NPN was seen in ServerHello */
 	int num_npn;
 	char *npn[TEST_MAX_NPN];

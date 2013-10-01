@@ -23,10 +23,66 @@ static int tls_handle_hs_cert_req(connection_t *);
 static int tls_handle_hs_hellodone(connection_t *);
 static int tls_handle_hs_kex(connection_t *);
 
+static void tls_clienthello_add_ciphers(connection_t *c, buf_t *b) {
+	test_t *test = (test_t *)connection_priv(c);
+	size_t i, j, n;
+
+	if(test->test_cs_preference && test->num_ciphers > 1) {
+		fprintf(stderr, "%s ClientHello: Testing cipher preference\n",
+			proto_ver(c));
+
+		n = 2;
+		buf_append_u16(b, 2 * n);
+		buf_append_u16(b, test->ciphers[1]);
+		buf_append_u16(b, test->ciphers[0]);
+
+		return;
+	}
+
+	/**
+	 * Send a list of all ciphers we know about (cs.h)
+	 * As soon as the server indicates a handshake failure
+	 * we can be relatively sure it was because none of
+	 * the ciphers listed in the ClientHello were supported.
+	 *
+	 * That's how we guess what ciphers a server support.
+	 */
+	n = 0;
+	for(i = 0; i < sizeof(ciphers) / sizeof(cipher_t); i++) {
+		for(j = 0; j < test->num_ciphers; j++)
+			if(test->ciphers[j] == ciphers[i].id) break;
+		if(j != test->num_ciphers) {
+			fprintf(stderr,
+				"%s ClientHello: Skipping cipher 0x%04x (%s)\n",
+				proto_ver(c), ciphers[i].id, ciphers[i].name);
+			continue;
+		}
+
+		/* Some servers do alert [2,47] if we exceed 128 ciphers */
+		n++;
+		if(n == test->bugfix_limit_cs) break;
+	}
+
+	fprintf(stderr, "%s ClientHello: Including %zd/%zd ciphers\n",
+		proto_ver(c), n, sizeof(ciphers) / sizeof(cipher_t));
+
+	buf_append_u16(b, 2 * n);
+	for(i = 0; i < sizeof(ciphers) / sizeof(cipher_t); i++) {
+		for(j = 0; j < test->num_ciphers; j++)
+			if(ciphers[i].id == test->ciphers[j]) break;
+		if(j != test->num_ciphers) {
+			continue;
+		}
+
+		buf_append_u16(b, ciphers[i].id);
+		if(test->bugfix_limit_cs && !--n)
+			break;
+	}
+}
 
 int tls_do_clienthello(connection_t *c) {
 	test_t *test = (test_t *)connection_priv(c);
-	size_t i, j, n, rec_len_offset, hs_len_offset, ext_len_offset;
+	size_t i, n, rec_len_offset, hs_len_offset, ext_len_offset;
 	unsigned char *p;
 	buf_t *b;
 	time_t t;
@@ -57,45 +113,7 @@ int tls_do_clienthello(connection_t *c) {
 	/* TLS Handshake: Empty session ID */
 	buf_append_u8(b, 0);
 
-	/**
-	 * Send a list of all ciphers we know about (cs.h)
-	 * As soon as the server indicates a handshake failure
-	 * we can be relatively sure it was because none of
-	 * the ciphers listed in the ClientHello were supported.
-	 *
-	 * That's how we guess what ciphers a server support.
-	 */
-	n = 0;
-	for(i = 0; i < sizeof(ciphers) / sizeof(cipher_t); i++) {
-		for(j = 0; j < test->num_ciphers; j++)
-			if(ciphers[i].id == test->ciphers[j]) break;
-		if(j != test->num_ciphers) {
-			fprintf(stderr, "%s ClientHello: Skipping cipher 0x%04x (%s)\n",
-				proto_ver(c), ciphers[i].id, ciphers[i].name);
-			continue;
-		}
-
-		n++;
-
-		/* Some servers (bredband.com) do alert [2,47] if more than 128 ciphers */
-		if(test->bugfix_limit_cs && n == test->bugfix_limit_cs) break;
-	}
-
-	fprintf(stderr, "%s ClientHello: Including %zd/%zd ciphers\n",
-		proto_ver(c), n, sizeof(ciphers) / sizeof(cipher_t));
-
-	buf_append_u16(b, 2 * n);
-	for(i = 0; i < sizeof(ciphers) / sizeof(cipher_t); i++) {
-		for(j = 0; j < test->num_ciphers; j++)
-			if(ciphers[i].id == test->ciphers[j]) break;
-		if(j != test->num_ciphers) {
-			continue;
-		}
-
-		buf_append_u16(b, ciphers[i].id);
-		if(test->bugfix_limit_cs && !--n)
-			break;
-	}
+	tls_clienthello_add_ciphers(c, b);
 
 	/**
 	 * Lame detection of CRIME side-channel attack vulnerability
@@ -371,6 +389,21 @@ static int tls_handle_hs_serverhello(connection_t *c) {
 		if(ciphers[i].id != (p[0] << 8 | p[1]))
 			continue;
 
+		cp = &ciphers[i];
+		if(test->test_cs_preference) {
+			if(cp->id == test->ciphers[0])
+				test->has_cs_preference = 1;
+			else if(cp->id != test->ciphers[1])
+				test->has_cs_preference = -1;
+
+			fprintf(stderr, "%s ServerHello: Server %s cipher "
+				"suite preference\n", proto_ver(c),
+				test->has_cs_preference == 0? "has NO":
+				test->has_cs_preference < 0? "has UNKNOWN":
+				"HAS");
+			break;
+		}
+
 		/**
 		 * Once a server has selected a cipher from the list sent in
 		 * ClientHello, we filter that cipher out and make sure we
@@ -379,7 +412,6 @@ static int tls_handle_hs_serverhello(connection_t *c) {
 		 * ClientHello.  We detect this behavior here to stop testing
 		 * cipher support for this server.
 		 */
-		cp = &ciphers[i];
 		for(j = 0; j < test->num_ciphers; j++) {
 			if(test->ciphers[j] == cp->id) {
 				fprintf(stderr, "%s ServerHello: Selected cipher 0x%04x was not in ClientHello\n",

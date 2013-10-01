@@ -205,12 +205,26 @@ static int proto_finish(connection_t *c) {
 	if(test->version == 2)
 		return 0;
 
-	if(test->alert_level == 2 && test->alert_desc == 47) do {
-		if(!test->bugfix_limit_cs) {
+	if(test->alert_level == 2) do {
+		if(test->alert_desc == 40 && !test->test_cs_preference) {
+			/* Have handshake failure (no shared ciphers) */
+			if(test->num_ciphers < 2) {
+				/* Need at least two supported cipher suites */
+				test->has_cs_preference = -1;
+				break;
+			}
+
+			/**
+			 * Test if server has cipher preference by sending two
+			 * of the previously selected ciphers in reverse order
+			 */
+			test->test_cs_preference = 1;
+		}
+		else if(test->alert_desc == 47 && !test->bugfix_limit_cs) {
 			test->bugfix_limit_cs = 128;
 			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with limited ciphersuite\n", proto_ver(c));
 		}
-		else if(!test->bugfix_broken_tlsext) {
+		else if(test->alert_desc == 47 && !test->bugfix_broken_tlsext) {
 			test->bugfix_broken_tlsext = 1;
 			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with no TLS extensions\n", proto_ver(c));
 		}
@@ -234,9 +248,10 @@ static int proto_finish(connection_t *c) {
 
 	/**
 	 * Stop testing ciphers on servers which forces ciphers
-	 * upon us that wasn't present in our ClientHello
+	 * upon us that wasn't present in our ClientHello.
+	 * Also stop if we've tested cipher suite preferences.
 	 */
-	if(test->bugfix_forced_cs) {
+	if(test->bugfix_forced_cs || test->test_cs_preference) {
 
 		return 0;
 	}

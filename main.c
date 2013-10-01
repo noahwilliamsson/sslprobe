@@ -187,6 +187,7 @@ static void protocol_report(test_t *test, int *once) {
 		}
 	}
 	printf("        ],\n");
+	printf("        cipherSuitePreference:%d,\n", test->has_cs_preference);
 
 	if(test->version != 2) {
 		printf("        \"extensions\":{\n");
