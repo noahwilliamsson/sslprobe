@@ -292,10 +292,26 @@ static int tls_handle_alert(connection_t *c) {
 	switch(p[1]) {
 	case 0: desc = "Close notification"; break;
 	case 10: desc = "Unknown message"; break;
+	case 20: desc = "Bad record MAC"; break;
+	case 21: desc = "Decryption failed"; break;
+	case 22: desc = "Record overflow"; break;
+	case 30: desc = "Decompression failure"; break;
 	case 40: desc = "Handshake failure"; break;
 	case 42: desc = "Bad certificate"; break;
+	case 43: desc = "Unsupported certificate"; break;
+	case 44: desc = "Certificate revoked"; break;
+	case 45: desc = "Certificate expired"; break;
+	case 46: desc = "Certificate unknown"; break;
 	case 47: desc = "Illegal parameter"; break;
 	case 49: desc = "Access denied"; break;
+	case 50: desc = "Decode error"; break;
+	case 51: desc = "Decrypt error"; break;
+	case 60: desc = "Export restriction"; break;
+	case 70: desc = "Protocol version"; break;
+	case 71: desc = "Insufficient security"; break;
+	case 80: desc = "Internal error"; break;
+	case 90: desc = "User cancelled"; break;
+	case 100: desc = "No regotiation"; break;
 	case 110: desc = "Unsupported extension"; break;
 	case 112: desc = "Unrecognized name"; test->ext_sni_unknown = 1; break;
 	default: desc = "<description unavailable>"; break;
