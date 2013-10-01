@@ -44,8 +44,7 @@ void connection_set_callbacks(connection_t *c, connection_callback_t proto_start
 
 connection_t *connection_open(struct addrinfo *ai, char *hostname) {
 	connection_t *c;
-
-	int fd, flags;
+	int fd, flags, saved_errno;
 
 	fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 	if(fd < 0) {
@@ -55,18 +54,23 @@ connection_t *connection_open(struct addrinfo *ai, char *hostname) {
 	flags = fcntl(fd, F_GETFL);
 	flags |= O_NONBLOCK;
 	if(fcntl(fd, F_SETFL, flags) < 0) {
+		saved_errno = errno;
 		close(fd);
+		errno = saved_errno;
 		return NULL;
 	}
 
-	if(connect(fd, ai->ai_addr, ai->ai_addrlen) < 0 && errno != EINPROGRESS) {
+	if(connect(fd, ai->ai_addr, ai->ai_addrlen) && errno != EINPROGRESS) {
+		saved_errno = errno;
 		syslog(LOG_NOTICE, "connect() to %s (%s) failed: %s",
 			hostname, addr_ai2ip(ai), strerror(errno));
 		close(fd);
+		errno = saved_errno;
 		return NULL;
 	}
 
-	root = (connection_t **)realloc(root, sizeof(connection_t *) * (num_connections + 1));
+	root = (connection_t **)realloc(root,
+				sizeof(connection_t *) * (num_connections + 1));
 	if(root == NULL) {
 		close(fd);
 		return NULL;

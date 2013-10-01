@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "addr.h"
 #include "connection.h"
@@ -58,8 +59,10 @@ int proto_connect(struct addrinfo *ai, char *hostname, test_t *test) {
 	connection_t *c;
 
 	c = connection_open(ai, hostname);
-	if(c == NULL)
+	if(c == NULL) {
+		test->error = errno;
 		return -1;
+	}
 
 	connection_set_callbacks(c, proto_start, proto_step, proto_finish, test);
 	return 0;
