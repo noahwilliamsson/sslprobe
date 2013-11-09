@@ -196,6 +196,9 @@ int tls_handle_header(connection_t *c) {
 	unsigned char *p;
 
 	p = buf_read_next(c->buf, 5, NULL);
+	if(p == NULL)
+		return -1;
+
 	test->rec_contenttype = p[0];
 	test->rec_version = p[1] << 8 | p[2];
 	test->rec_len = p[3] << 8 | p[4];
