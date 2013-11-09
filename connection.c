@@ -175,7 +175,8 @@ static int connection_read(connection_t *c) {
 		return -1;
 	}
 	else if(n == 0) {
-		/* connection shutdown */
+		/* Remote peer shutdown its side */
+		c->error = ECONNRESET;
 		return -1;
 	}
 
