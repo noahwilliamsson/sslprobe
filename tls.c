@@ -558,7 +558,7 @@ static int tls_handle_hs_servercert(connection_t *c) {
 			if(test->certs[test->num_certs] != NULL)
 				test->num_certs++;
 		}
-#ifdef X509_DUMP
+#ifdef DUMP_X509
 		{
 			char buf[1024];
 			FILE *fd;
