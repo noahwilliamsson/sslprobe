@@ -141,7 +141,7 @@ static void probe_server(struct addrinfo *ai, char *hostname) {
 
 
 	/* Fire up new connections to test each protocol */
-	fprintf(stderr, "[%s] Starting SSL/TLS tests\n",
+	fprintf(stderr, "[%s] -- Starting SSL/TLS tests\n",
 		addr_ai2ip(ai));
 	for(i = 0; i < 5; i++)
 		proto_connect(ai, hostname, &tests[i]);

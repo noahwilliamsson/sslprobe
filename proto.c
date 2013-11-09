@@ -24,6 +24,8 @@
 #include "sslv2.h"
 #include "tls.h"
 
+#define TAG " \033[1;32;40m--\033[0m "
+
 /* Callbacks */
 static int proto_start(connection_t *);
 static int proto_step(connection_t *);
@@ -49,8 +51,8 @@ char *proto_ver(connection_t *c) {
 	test_t *test = (test_t *)connection_priv(c);
 	static char version[128];
 
-	sprintf(version, "[%s/%s]",
-		proto_name(test->version), addr_ai2ip(c->ai));
+	sprintf(version, "[%s/%s %d]", proto_name(test->version),
+		addr_ai2ip(c->ai), addr_ai2port(c->ai));
 
 	return version;
 }
@@ -83,7 +85,7 @@ static int proto_start(connection_t *c) {
 	int port;
 
 	test->num_connections++;
-	fprintf(stderr, "%s Starting protocol test\n", proto_ver(c));
+	fprintf(stderr, "%s" TAG "Starting protocol test\n", proto_ver(c));
 
 	port = addr_ai2port(c->ai);
 	if(port == 25) {
@@ -222,11 +224,15 @@ static int proto_finish(connection_t *c) {
 		}
 		else if(test->alert_desc == 47 && !test->bugfix_limit_cs) {
 			test->bugfix_limit_cs = 128;
-			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with limited ciphersuite\n", proto_ver(c));
+			fprintf(stderr, "%s" TAG "Server alerts with "
+				"'Illegal parameter', retrying with "
+				"limited ciphersuite\n", proto_ver(c));
 		}
 		else if(test->alert_desc == 47 && !test->bugfix_broken_tlsext) {
 			test->bugfix_broken_tlsext = 1;
-			fprintf(stderr, "%s: Server alerts with 'Illegal parameter', retrying with no TLS extensions\n", proto_ver(c));
+			fprintf(stderr, "%s" TAG "Server alerts with "
+				"'Illegal parameter', retrying with "
+				"no TLS extensions\n", proto_ver(c));
 		}
 		else
 			break;
@@ -239,7 +245,8 @@ static int proto_finish(connection_t *c) {
 		test->alert_desc = 0;
 
 		if(proto_connect(c->ai, c->hostname, test) < 0) {
-			fprintf(stderr, "%s: Failed to reinitialize :(\n", proto_ver(c));
+			fprintf(stderr, "%s" TAG "Connection probe failed\n",
+				proto_ver(c));
 			return -1;
 		}
 
@@ -269,7 +276,8 @@ static int proto_finish(connection_t *c) {
 		test->hs_type = 0;
 
 		if(proto_connect(c->ai, c->hostname, test) < 0) {
-			fprintf(stderr, "%s: Failed to reinitialize :(\n", proto_ver(c));
+			fprintf(stderr, "%s" TAG "Connection probe failed\n",
+				proto_ver(c));
 			return -1;
 		}
 	}

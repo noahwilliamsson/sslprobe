@@ -141,9 +141,8 @@ int connection_write(connection_t *c, void *data, size_t len) {
 			continue;
 
 		c->error = errno;
-		syslog(LOG_INFO, "send() to %s (%s) failed: %s",
-			c->hostname, addr_ai2ip(c->ai),
-			strerror(c->error));
+		syslog(LOG_INFO, "%s -- send() failed: %s",
+			proto_ver(c), strerror(c->error));
 		return -1;
 	}
 
@@ -234,8 +233,8 @@ int connection_do_io(void) {
 			}
 
 			if(elapsed_ms > 10000)
-				syslog(LOG_INFO, "%s Connection to %s succeed after %dms",
-					proto_ver(c), c->hostname, elapsed_ms);
+				syslog(LOG_INFO, "%s -- Connection succeeded "
+					"after %dms", proto_ver(c), elapsed_ms);
 
 			if(c->proto_start(c) < 0)
 				connection_finish(c);
@@ -250,8 +249,8 @@ int connection_do_io(void) {
 
 		if(!FD_ISSET(c->fd, &rfds)) {
 			if(elapsed_ms > 35000) {
-				syslog(LOG_INFO, "%s Timeout waiting for data from %s, %dms elapsed",
-					proto_ver(c), c->hostname, elapsed_ms);
+				syslog(LOG_INFO, "%s -- Read timed out "
+					"after %dms", proto_ver(c), elapsed_ms);
 				c->error = ETIMEDOUT;
 				connection_finish(c);
 			}
@@ -260,6 +259,8 @@ int connection_do_io(void) {
 		}
 
 		if(connection_read(c) < 0) {
+			syslog(LOG_DEBUG, "%s -- recv() failed with error: %s",
+				proto_ver(c), strerror(c->error));
 			connection_finish(c);
 			continue;
 		}

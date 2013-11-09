@@ -224,8 +224,8 @@ int tls_handle_header(connection_t *c) {
 	}
 
 	if(test->rec_version != test->version) {
-		fprintf(stderr, "%s TLS version not supported\n",
-			proto_ver(c));
+		fprintf(stderr, "%s TLS version \033[1;31;40mnot supported\033[0m (got version 0x%04x)\n",
+			proto_ver(c), test->rec_version);
 		return -1;
 	}
 
@@ -341,8 +341,9 @@ static int tls_handle_alert(connection_t *c) {
 	test->alert_level = p[0];
 	test->alert_desc = p[1];
 
-	fprintf(stderr, "%s Alert: Level=0x%02x (%s), description=0x%02x (%s)\n",
-		proto_ver(c), p[0], level, p[1], desc);
+	fprintf(stderr, "%s \033[1;31;40mAlert:\033[0m Level=0x%02x (%s), "
+		"description=0x%02x (%s)\n", proto_ver(c),
+		p[0], level, p[1], desc);
 
 	buf_read_done(c->buf);
 
@@ -637,8 +638,8 @@ static int tls_handle_hs_hellodone(connection_t *c) {
 	if((p = buf_read_next(c->buf, 4, NULL)) == NULL) return -1;
 	type = p[0];
 	msg_len = p[1] << 16 | p[2] << 8 | p[3];
-	fprintf(stderr, "%s ServerHello Done: [type 0x%02x, len 0x%06zx]\n",
-		proto_ver(c), type, msg_len);
+	fprintf(stderr, "%s \033[1;32;40mServerHello Done:\033[0m "
+		"[type 0x%02x, len 0x%06zx]\n", proto_ver(c), type, msg_len);
 
 	if((p = buf_read_next(c->buf, msg_len, &msg_len)) == NULL) return -1;
 
