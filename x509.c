@@ -62,7 +62,7 @@ char *pem_encode(const unsigned char *data, size_t len, size_t *outlen) {
 	return output;
 }
 
-#ifdef X509
+#ifdef DUMP_X509
 #include <openssl/x509v3.h>
 #include <openssl/objects.h>
 
