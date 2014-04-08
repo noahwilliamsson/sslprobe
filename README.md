@@ -108,8 +108,8 @@ Merge files and compile report on TLSv1.2 statuses
 ----
 A slightly more advanced example.
 
-    $ ./ssldump google.com > google.json
-    $ ./ssldump facebook.com > facebook.json
+    $ ./sslprobe google.com > google.json
+    $ ./sslprobe facebook.com > facebook.json
     $ jq '.[] | [ { host: .host,  ip: .ip,  proto: (.protocols[4] | { name: .name,  supported: .supported } ) } ]' google.json facebook.json
     [
 	  {
@@ -127,8 +127,8 @@ A slightly more advanced example.
 	      "supported": true,
 	      "name": "TLS 1.2"
 	    },
-	    "ip": "82.99.15.2",
-	    "host": "hd.se"
+	    "ip": "173.194.32.9",
+	    "host": "google.com"
 	  }
 	]
 
@@ -140,200 +140,223 @@ Here's some sample output from a test against Facebook.
 The certificate data was stripped down to reduce output size.
 
     [
-	  {
-	    "ip":"173.252.110.27",
-	    "port":443,
-	    "host":"facebook.com",
-	    "protocols":[
-	      {
-	        "name":"SSL 2.0",
-	        "version":2,
-	        "supported":false,
-	        "establishedConnections":1,
-	        "lastError":"Connection reset by peer",
-	        "compressionAlgorithm":0,
-	        "sessionIdBytes":0,
-	        "cipherSuites":[
-	        ],
-	        "certificates":[
-	        ]
-	      },
-	      {
-	        "name":"SSL 3.0",
-	        "version":768,
-	        "supported":true,
-	        "establishedConnections":10,
-	        "lastError":null,
-	        "compressionAlgorithm":0,
-	        "sessionIdBytes":32,
-	        "cipherSuites":[
-	          { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
-	          { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
-	          { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
-	          { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
-	          { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
-	        ],
-	        "extensions":{
-	          "sni":1,
-	          "sessionTicket":0,
-	          "secureRenegotiation":1,
-	          "npn":[
-	            "spdy/3",
-	            "spdy/2",
-	            "http/1.1"
-	          ]
-	        },
-	        "lastAlert":{
-	          "level":2,
-	          "description":40
-	        },
-	        "bugs":{
-	          "csLimit":0,
-	          "forcedCs":0
-	        },
-	        "certificates":[
-	"-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
-	        ]
-	      },
-	      {
-	        "name":"TLS 1.0",
-	        "version":769,
-	        "supported":true,
-	        "establishedConnections":10,
-	        "lastError":null,
-	        "compressionAlgorithm":0,
-	        "sessionIdBytes":0,
-	        "cipherSuites":[
-	          { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
-	          { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
-	          { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
-	          { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
-	          { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
-	        ],
-	        "extensions":{
-	          "sni":1,
-	          "sessionTicket":1,
-	          "secureRenegotiation":1,
-	          "npn":[
-	            "spdy/3",
-	            "spdy/2",
-	            "http/1.1"
-	          ]
-	        },
-	        "lastAlert":{
-	          "level":2,
-	          "description":40
-	        },
-	        "bugs":{
-	          "csLimit":0,
-	          "forcedCs":0
-	        },
-	        "certificates":[
-	"-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
-	        ]
-	      },
-	      {
-	        "name":"TLS 1.1",
-	        "version":770,
-	        "supported":true,
-	        "establishedConnections":10,
-	        "lastError":null,
-	        "compressionAlgorithm":0,
-	        "sessionIdBytes":0,
-	        "cipherSuites":[
-	          { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
-	          { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
-	          { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
-	          { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
-	          { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
-	        ],
-	        "extensions":{
-	          "sni":1,
-	          "sessionTicket":1,
-	          "secureRenegotiation":1,
-	          "npn":[
-	            "spdy/3",
-	            "spdy/2",
-	            "http/1.1"
-	          ]
-	        },
-	        "lastAlert":{
-	          "level":2,
-	          "description":40
-	        },
-	        "bugs":{
-	          "csLimit":0,
-	          "forcedCs":0
-	        },
-	        "certificates":[
-	"-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
-	        ]
-	      },
-	      {
-	        "name":"TLS 1.2",
-	        "version":771,
-	        "supported":true,
-	        "establishedConnections":14,
-	        "lastError":null,
-	        "compressionAlgorithm":0,
-	        "sessionIdBytes":0,
-	        "cipherSuites":[
-	          { "id":49199,	"name":"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" },
-	          { "id":49200,	"name":"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" },
-	          { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":156,	"name":"TLS_RSA_WITH_AES_128_GCM_SHA256" },
-	          { "id":157,	"name":"TLS_RSA_WITH_AES_256_GCM_SHA384" },
-	          { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
-	          { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
-	          { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
-	          { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
-	          { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
-	          { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
-	          { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
-	        ],
-	        "extensions":{
-	          "sni":1,
-	          "sessionTicket":1,
-	          "secureRenegotiation":1,
-	          "npn":[
-	            "spdy/3",
-	            "spdy/2",
-	            "http/1.1"
-	          ]
-	        },
-	        "lastAlert":{
-	          "level":2,
-	          "description":40
-	        },
-	        "bugs":{
-	          "csLimit":0,
-	          "forcedCs":0
-	        },
-	        "certificates":[
-	"-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
-	"-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
-	        ]
-	      }
-	    ]
-	  }
-	]
+      {
+        "ip":"173.252.110.27",
+        "port":443,
+        "host":"facebook.com",
+        "protocols":[
+          {
+            "name":"SSL 2.0",
+            "version":2,
+            "supported":false,
+            "establishedConnections":1,
+            "lastError":"Connection reset by peer",
+            "compressionAlgorithm":0,
+            "sessionIdBytes":0,
+            "cipherSuites":[
+            ],
+            "cipherSuitePreference":0,
+            "certificateChainSize":0,
+            "certificates":[
+            ]
+          },
+          {
+            "name":"SSL 3.0",
+            "version":768,
+            "supported":true,
+            "establishedConnections":11,
+            "lastError":null,
+            "compressionAlgorithm":0,
+            "sessionIdBytes":32,
+            "cipherSuites":[
+              { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
+              { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
+              { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
+              { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
+              { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
+              { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
+              { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
+              { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
+              { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
+            ],
+            "cipherSuitePreference":1,
+            "extensions":{
+              "sni":1,
+              "sniNameUnknown":0,
+              "sessionTicket":0,
+              "secureRenegotiation":1,
+              "heartbeat":0,
+              "npn":[
+                "spdy/3.1",
+                "spdy/3",
+                "http/1.1"
+              ]
+            },
+            "lastAlert":{
+              "level":0,
+              "description":0
+            },
+            "bugs":{
+              "brokenTlsExt":0,
+              "csLimit":0,
+              "forcedCs":0
+            },
+            "certificateChainSize":4152,
+            "certificates":[
+                "-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
+            ]
+          },
+          {
+            "name":"TLS 1.0",
+            "version":769,
+            "supported":true,
+            "establishedConnections":11,
+            "lastError":null,
+            "compressionAlgorithm":0,
+            "sessionIdBytes":0,
+            "cipherSuites":[
+              { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
+              { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
+              { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
+              { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
+              { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
+              { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
+              { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
+              { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
+              { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
+            ],
+            "cipherSuitePreference":1,
+            "extensions":{
+              "sni":1,
+              "sniNameUnknown":0,
+              "sessionTicket":1,
+              "secureRenegotiation":1,
+              "heartbeat":0,
+              "npn":[
+                "spdy/3.1",
+                "spdy/3",
+                "http/1.1"
+              ]
+            },
+            "lastAlert":{
+              "level":0,
+              "description":0
+            },
+            "bugs":{
+              "brokenTlsExt":0,
+              "csLimit":0,
+              "forcedCs":0
+            },
+            "certificateChainSize":4152,
+            "certificates":[
+                "-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
+            ]
+          },
+          {
+            "name":"TLS 1.1",
+            "version":770,
+            "supported":true,
+            "establishedConnections":11,
+            "lastError":null,
+            "compressionAlgorithm":0,
+            "sessionIdBytes":0,
+            "cipherSuites":[
+              { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
+              { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
+              { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
+              { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
+              { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
+              { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
+              { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
+              { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
+              { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
+            ],
+            "cipherSuitePreference":1,
+            "extensions":{
+              "sni":1,
+              "sniNameUnknown":0,
+              "sessionTicket":1,
+              "secureRenegotiation":1,
+              "heartbeat":0,
+              "npn":[
+                "spdy/3.1",
+                "spdy/3",
+                "http/1.1"
+              ]
+            },
+            "lastAlert":{
+              "level":0,
+              "description":0
+            },
+            "bugs":{
+              "brokenTlsExt":0,
+              "csLimit":0,
+              "forcedCs":0
+            },
+            "certificateChainSize":4152,
+            "certificates":[
+                "-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
+            ]
+          },
+          {
+            "name":"TLS 1.2",
+            "version":771,
+            "supported":true,
+            "establishedConnections":15,
+            "lastError":null,
+            "compressionAlgorithm":0,
+            "sessionIdBytes":0,
+            "cipherSuites":[
+              { "id":49199,	"name":"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" },
+              { "id":49200,	"name":"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" },
+              { "id":49171,	"name":"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" },
+              { "id":49172,	"name":"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" },
+              { "id":156,	"name":"TLS_RSA_WITH_AES_128_GCM_SHA256" },
+              { "id":157,	"name":"TLS_RSA_WITH_AES_256_GCM_SHA384" },
+              { "id":47,	"name":"RSA_WITH_AES_128_CBC_SHA" },
+              { "id":53,	"name":"RSA_WITH_AES_256_CBC_SHA" },
+              { "id":49169,	"name":"TLS_ECDHE_RSA_WITH_RC4_128_SHA" },
+              { "id":5,	"name":"RSA_WITH_RC4_128_SHA" },
+              { "id":4,	"name":"RSA_WITH_RC4_128_MD5" },
+              { "id":49170,	"name":"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA" },
+              { "id":10,	"name":"RSA_WITH_3DES_EDE_CBC_SHA" }
+            ],
+            "cipherSuitePreference":1,
+            "extensions":{
+              "sni":1,
+              "sniNameUnknown":0,
+              "sessionTicket":1,
+              "secureRenegotiation":1,
+              "heartbeat":0,
+              "npn":[
+                "spdy/3.1",
+                "spdy/3",
+                "http/1.1"
+              ]
+            },
+            "lastAlert":{
+              "level":0,
+              "description":0
+            },
+            "bugs":{
+              "brokenTlsExt":0,
+              "csLimit":0,
+              "forcedCs":0
+            },
+            "certificateChainSize":4152,
+            "certificates":[
+                "-----BEGIN CERTIFICATE-----\nMIIFNjCCBB6gAw....-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIF7DCCBNSg...-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIE0.....JjhJ+xr3AAAAAAAA-----END CERTIFICATE-----\n"
+            ]
+          }
+        ]
+      }
+    ]
+
