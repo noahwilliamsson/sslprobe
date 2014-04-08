@@ -389,7 +389,7 @@ static int tls_handle_heartbeat(connection_t *c) {
 		proto_ver(c), heartbeat_type, payload_len, pad_len);
 
 	/* CVE-2014-0160 sometimes breaks payload_len + pad_len calculation */
-	total_len = test->rec_len + 3;
+	total_len = test->rec_len - 3;
 	p = buf_read_next(c->buf, total_len, NULL);
 	if(p == NULL) {
 		fprintf(stderr, "%s Heartbeat: failed to read %zd (payload %zd +"
