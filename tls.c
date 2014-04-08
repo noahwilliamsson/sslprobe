@@ -152,6 +152,11 @@ int tls_do_clienthello(connection_t *c) {
 			buf_append_u16(b, 0x0000 /* length */);
 		}
 
+		/* Heartbeat: http://tools.ietf.org/html/rfc6520 */
+		buf_append_u16(b, 0x000f /* type */);
+		buf_append_u16(b, 1 /* length */);
+		buf_append_u8(b, 2 /* peer allowed to send */);
+
 		/* Unregistered 1337 extension just to fuck with NIDS */
 		buf_append_u16(b, 0x0539 /* type */);
 		buf_append_u16(b, 42 /* length */);
@@ -470,6 +475,14 @@ static int tls_handle_hs_serverhello(connection_t *c) {
 			test->ext_sni = 1;
 			fprintf(stderr, "%s ServerHello: Extension SNI with %d bytes data\n",
 				proto_ver(c), len);
+			break;
+		case 0x000f:
+			/* Server supports Heartbeat */
+			if(len == 1)
+				test->ext_heartbeat = p[0];
+			fprintf(stderr, "%s ServerHello: Extension Heartbeat"
+				" with %d bytes data: %d\n", proto_ver(c),
+				len, test->ext_heartbeat);
 			break;
 		case 0x0023:
 			/**

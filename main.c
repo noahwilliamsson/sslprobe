@@ -195,6 +195,7 @@ static void protocol_report(test_t *test, int *once) {
 		printf("          \"sniNameUnknown\":%d,\n", test->ext_sni_unknown);
 		printf("          \"sessionTicket\":%d,\n", test->ext_tickets);
 		printf("          \"secureRenegotiation\":%d,\n", test->ext_reneg);
+		printf("          \"heartbeat\":%d,\n", test->ext_heartbeat);
 		printf("          \"npn\":[\n");
 		for(i = 0; i < test->num_npn; i++) {
 			printf("            \"%s\"%s\n", test->npn[i],

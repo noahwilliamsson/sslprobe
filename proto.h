@@ -79,6 +79,8 @@ typedef struct {
 	int ext_tickets;
 	/* If Re-Negotiation was seen in ServerHello */
 	int ext_reneg;
+	/* If Heartbeet (RFC6520) was seen in ServerHello */
+	int ext_heartbeat;
 
 	/* Set if server restricts cipher count to 128 */
 	int bugfix_limit_cs;
