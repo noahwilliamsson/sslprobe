@@ -184,7 +184,7 @@ int tls_do_clienthello(connection_t *c) {
 	p = buf_peek(b, 0, n);
 
 	if(connection_write(c, p, n) < 0) {
-		fprintf(stderr, "%s Failed to send ClientHello\n",
+		fprintf(stderr, "%s ClientHello: Failed to send data\n",
 			proto_ver(c));
 		return -1;
 	}
