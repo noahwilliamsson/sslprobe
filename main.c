@@ -213,6 +213,7 @@ static void protocol_report(test_t *test, int *once) {
 		printf("        },\n");
 	}
 
+	printf("        \"certificateChainSize\":%zd,\n", test->cert_chain_size);
 	printf("        \"certificates\":[\n");
 	for(i = 0; i < test->num_certs; i++) {
 		printf("\"");

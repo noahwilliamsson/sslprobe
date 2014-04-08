@@ -58,6 +58,7 @@ typedef struct {
 	/* Number of session ID bytes */
 	unsigned char resumption;
 	/* Certificate chain */
+	size_t cert_chain_size;
 	int num_certs;
 	char *certs[TEST_MAX_CERTS];
 

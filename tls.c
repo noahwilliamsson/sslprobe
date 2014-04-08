@@ -547,6 +547,7 @@ static int tls_handle_hs_servercert(connection_t *c) {
 
 	if((p = buf_read_next(c->buf, 3, &msg_len)) == NULL) return -1;
 	cert_list_size = p[0] << 16 | p[1] << 8 | p[2];
+	test->cert_chain_size = 0;
 	test->num_certs = 0;
 	while(cert_list_size > 0) {
 		if((p = buf_read_next(c->buf, 3, &msg_len)) == NULL) return -1;
@@ -555,6 +556,7 @@ static int tls_handle_hs_servercert(connection_t *c) {
 
 		if((p = buf_read_next(c->buf, cert_size, &msg_len)) == NULL) return -1;
 
+		test->cert_chain_size += cert_size;
 		if(test->num_certs < TEST_MAX_CERTS) {
 			if(test->certs[test->num_certs] != NULL)
 				free(test->certs[test->num_certs]);
