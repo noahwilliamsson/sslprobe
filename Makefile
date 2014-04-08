@@ -8,6 +8,10 @@ ifdef X509
 	LDFLAGS = -lcrypto
 endif
 
+ifdef HEARTBLEED
+	CFLAGS += -DHEARTBLEED
+endif
+
 all: $(OBJS)
 	$(CC) -o sslprobe $(OBJS) $(LDFLAGS)
 clean:

@@ -180,9 +180,17 @@ static int proto_step(connection_t *c) {
 			return -1;
 
 		if(test->hs_type == 0x0e) {
+#ifndef HEARTBLEED
 			connection_finish(c);
 			test->state = X_DONE;
 			break;
+#else
+			if(!test->ext_heartbeat || tls_do_heartbeat(c, -1) < 0) {
+				connection_finish(c);
+				test->state = X_DONE;
+				break;
+			}
+#endif
 		}
 
 		/* Wait for header */
