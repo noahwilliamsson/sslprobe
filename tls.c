@@ -75,7 +75,7 @@ static void tls_clienthello_add_ciphers(connection_t *c, buf_t *b) {
 		}
 
 		buf_append_u16(b, ciphers[i].id);
-		if(test->bugfix_limit_cs && !--n)
+		if(!--n)
 			break;
 	}
 }
