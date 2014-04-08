@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 
 static void probe_server(struct addrinfo *ai, char *hostname) {
 	int i, once = 0;
-	test_t tests[5] = {
+	test_t tests[] = {
 		{ .version = 0x0002 },
 		{ .version = 0x0300 },
 		{ .version = 0x0301 },
@@ -143,7 +143,7 @@ static void probe_server(struct addrinfo *ai, char *hostname) {
 	/* Fire up new connections to test each protocol */
 	fprintf(stderr, "[%s] -- Starting SSL/TLS tests\n",
 		addr_ai2ip(ai));
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < sizeof(tests)/sizeof(tests[0]); i++)
 		proto_connect(ai, hostname, &tests[i]);
 
 	/* Do protocol negotation and test ciphers */
@@ -151,7 +151,7 @@ static void probe_server(struct addrinfo *ai, char *hostname) {
 
 
 	printf("    \"protocols\":[\n");
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < sizeof(tests)/sizeof(tests[0]); i++)
 		protocol_report(&tests[i], &once);
 	printf("\n    ]\n");
 
