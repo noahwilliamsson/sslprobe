@@ -3,11 +3,16 @@
  *
  */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 
 #include "addr.h"
+
+#ifndef AI_IDN
+#define AI_IDN 0
+#endif
 
 
 static int addr_aicmp(const void *p1, const void *p2) {
@@ -49,7 +54,7 @@ struct addrinfo *addr_resolve(char *hostname, char *port) {
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_ADDRCONFIG;
+	hints.ai_flags = AI_ADDRCONFIG|AI_IDN;
 
 	ret = getaddrinfo(hostname, port, &hints, &list);
 	if(ret) {

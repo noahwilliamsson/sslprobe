@@ -68,6 +68,7 @@
 #include <string.h>
 #include <signal.h>
 #include <syslog.h>
+#include <locale.h>
 
 #define APPNAME "sslprobe"
 
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
 	}
 	#endif
 
+	setlocale(LC_ALL, "");
 	openlog(APPNAME, LOG_PERROR, LOG_USER);
 	signal(SIGPIPE, SIG_IGN);
 
